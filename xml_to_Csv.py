@@ -8,7 +8,7 @@ Created on Wed Apr  4 10:37:37 2018
 
 import xml.etree.ElementTree as ET
 import pandas as pd
-tree = ET.parse('base_museuIndio.xml')
+tree = ET.parse('base_museuIndio.xml') #Nome do documento xml, deve estar na mesma pasta do script.
 root = tree.getroot()
 
 lista_tags = []
