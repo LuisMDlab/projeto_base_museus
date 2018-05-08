@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Apr  4 10:37:37 2018
 
-@author: Luis
-"""
-#%% Importa a base em xml e dar o parse.
-
+#%% Importa a base em xml e faz a leitura.
 import xml.etree.ElementTree as ET
 import pandas as pd
-tree = ET.parse('base_museuIndio.xml') #Nome do documento xml, deve estar na mesma pasta do script.
+tree = ET.parse('03 - base_tombo_museu.txt') #Nome do documento xml, deve estar na mesma pasta do script.
 root = tree.getroot()
 
 lista_tags = []
@@ -25,17 +20,36 @@ lista_tags = set(lista_tags) #Tira a repetição das tags/colunas
 #Cria listas para cada tag em um dicionário.
 for tag in lista_tags:
     dict_base[tag] = []
-  
+
+print(dict_base.keys())
+
+#%% Processo de Conversão
+lista_multiplos=[]
+
 #Lê os valores das tags/colunas do txt e armazena nas respectivas lista no dicionário.
-for element in root:
-    for column in lista_tags:
-        for tag in element.findall(column):
-            dict_base[column].append(tag.text)
+for i in range(len(root)):
+    for tag in dict_base.keys():
+
+        if root[i].find(tag) != None:
+            if len(root[i].findall(tag)) > 1:
+                lista_teste.append(tag)
+                for campo in root[i].findall(tag):
+                    lista_multiplos.append(campo.text)
+                dict_base[tag].append(";".join(lista_multiplos))
+                lista_multiplos=[]
+
+            elif len(root[i].findall(tag)) == 1:
+                if root[i].find(tag).find('a') == None:
+                    for campo in root[i].findall(tag):
+                        dict_base[tag].append(campo.text)
+                elif root[i].find(tag).find('a') != None:
+                    dict_base[tag].append(str(root[i].find(tag).find('a').attrib['href'])+';'+str(root[i].find(tag).find('a').text))
+
+        elif root[i].find(tag) == None:
+            dict_base[tag].append('Nulo')
+
 
 #%%Exportação
-            
 #Transforma o dicionário em um DataFrame para ser exportado para csv
-base_csv = pd.DataFrame.from_dict(dict_base, orient='index') #Se o xml for padronizado retirar o "orient="index""
-
-#Exporta o dataframe para csv (Neste caso o dataframe não é padronizado, por isso foi usado o "transpose", caso contrário, removê-lo).
-base_csv.transpose().to_csv('base_resultante.csv', encoding='utf-8')
+base_csv = pd.DataFrame(dict_base)
+base_csv.to_csv('base_resultante.csv', encoding='utf-8')
